@@ -1,57 +1,44 @@
 package main
 
 import (
-	"crud-api/handler"
+	// "fmt"
+	// "io"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"log"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
+	"os"
 )
 
-func init() {
+func HelloServer(w http.ResponseWriter, req *http.Request) {
+	fmt.Println("connect ok")
+	w.Header().Set("Content-Type", "text/plain")
 
-}
-
-var (
-	ServiceName = "crud-api"
-	port        = "10000"
-)
-
-type Server struct {
-	router     *gin.Engine
-	httpServer *http.Server
-}
-
-func NewServer() *Server {
-	r := gin.New()
-	return &Server{
-		router: r,
-	}
+	w.Write([]byte("This is an example server.\n"))
+	// fmt.Fprintf(w, "This is an example server.\n")
+	// io.WriteString(w, "This is an example server.\n")
 }
 
 func main() {
 
-	server := NewServer()
-	server.Router()
+	certs := x509.NewCertPool()
 
-	server.httpServer = &http.Server{
-		Addr:    fmt.Sprintf(":%s", port),
-		Handler: server.router,
-	}
-
-	err := server.httpServer.ListenAndServe()
+	pemData, err := os.ReadFile("server.crt")
 	if err != nil {
-		panic(err)
+		log.Fatal("ReadFile: ", err)
+
 	}
-}
+	certs.AppendCertsFromPEM(pemData)
+	mTLSConfig := tls.Config{
+		RootCAs: certs,
+	}
 
-func (s *Server) Router() {
-
-	grouter := s.router.Group("v1")
-	// demo
-	grouter.GET("/set", handler.Set())
-	grouter.GET("/get-a", handler.Get())
-	grouter.GET("/get-b", handler.GetB())
-	grouter.GET("/health", handler.Health())
-
+	fmt.Println("start 1", mTLSConfig)
+	http.HandleFunc("/hello", HelloServer)
+	// err = http.ListenAndServe(":443", nil)
+	err = http.ListenAndServeTLS(":443", "server.crt", "server.key", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }
