@@ -20,6 +20,7 @@ type Reponse struct {
 
 func Set() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		panic("xin chao")
 		ctx.JSON(http.StatusOK, Reponse{
 			Message: string("set-data"),
 		})
