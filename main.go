@@ -2,6 +2,7 @@ package main
 
 import (
 	"crud-api/handler"
+	"crud-api/middleware"
 	"fmt"
 	"net"
 	"net/http"
@@ -56,6 +57,8 @@ func (s *Server) Router() {
 
 	grouter := s.router.Group("v1")
 	grouter.Use(GinRecovery(true))
+	grouter.Use(middleware.Cors())
+	// grouter.Use(middleware.CorsByRules())
 	// demo
 	grouter.GET("/set", handler.Set())
 	grouter.GET("/get-a", handler.Get())
