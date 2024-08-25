@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"crypto/subtle"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -67,9 +68,10 @@ func CorsByRules() gin.HandlerFunc {
 }
 
 func checkCors(currentOrigin string) *CORSWhitelist {
-	for _, whitelist := range coreCfg.Whitelist {
-		if currentOrigin == whitelist.AllowOrigin {
-			return &whitelist
+	for i := range coreCfg.Whitelist {
+		whitelistCopy := coreCfg.Whitelist[i]
+		if subtle.ConstantTimeCompare([]byte(currentOrigin), []byte(whitelistCopy.AllowOrigin)) == 1 {
+			return &whitelistCopy
 		}
 	}
 	return nil
